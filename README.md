@@ -1,5 +1,4 @@
 # p-throttler
----
 
 [![Build Status](https://secure.travis-ci.org/IndigoUnited/node-p-throttler.png)](http://travis-ci.org/IndigoUnited/node-p-throttler.png)
 
