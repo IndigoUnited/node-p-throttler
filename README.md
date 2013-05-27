@@ -71,6 +71,7 @@ throttler.enqueue(function () {
 .then(function (value) {
     console.log(value); // foo
 });
+```
 
 
 ### .abort(): Promise
