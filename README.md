@@ -54,20 +54,22 @@ var throttler = PThrottler.create(15, {
     'bar': 2
 });
 
-// Single type
+// Single type, will only run when a free slot for
+// "foo" is available
 throttler.enqueue(function () {
-    return method();
+    return method();    // method() returns some promise
 }, 'foo')
 .then(function (value) {
-    console.log(value); // foo
+    console.log(value);
 });
 
-// Multiple type
+// Multiple type, will only run when a free slot for
+// "foo" and "bar" are available
 throttler.enqueue(function () {
-    return method();
+    return method();    // method() returns some promise
 }, ['foo', 'bar'])
 .then(function (value) {
-    console.log(value); // foo
+    console.log(value);
 });
 ```
 
