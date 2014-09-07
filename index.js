@@ -91,9 +91,11 @@ PThrottler.prototype._processEntry = function (entry) {
             promise = Q.resolve(promise);
         }
 
+        promise.progress(entry.deferred.notify.bind(entry.deferred));
+
         promise.then(
-            this._onResolve.bind(this, entry, true),
-            this._onResolve.bind(this, entry, false)
+            this._onFulfill.bind(this, entry, true),
+            this._onFulfill.bind(this, entry, false)
         );
     }
 
@@ -101,7 +103,7 @@ PThrottler.prototype._processEntry = function (entry) {
 };
 
 
-PThrottler.prototype._onResolve = function (entry, ok, result) {
+PThrottler.prototype._onFulfill = function (entry, ok, result) {
     // Resolve/reject the deferred based on success/error of the promise
     if (ok) {
         entry.deferred.resolve(result);

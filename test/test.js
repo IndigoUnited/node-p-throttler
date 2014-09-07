@@ -25,15 +25,46 @@ describe('PThtroller', function () {
             expect(promise.then).to.be.a('function');
         });
 
-        it('should call the function and resolve', function (next) {
+        it('should call the function and fulfill the promise accordingly', function (next) {
             var throttler = new PThtroller();
 
             throttler.enqueue(function () { return Q.resolve('foo'); })
             .then(function (ret) {
                 expect(ret).to.equal('foo');
+
+                return throttler.enqueue(function () { return Q.reject(new Error('foo')); });
+            })
+           .fail(function (err) {
+                expect(err).to.be.an(Error);
+                expect(err.message).to.equal('foo');
                 next();
             })
             .done();
+        });
+
+        it('should forward promise progress', function () {
+            var progress;
+            var throttler = new PThtroller();
+
+            throttler.enqueue(function () {
+                var deferred = Q.defer();
+
+                setImmediate(function () {
+                    deferred.notify(0.5);
+                    deferred.resolve('foo');
+                });
+
+                return deferred.promise;
+            })
+            .progress(function (data) {
+                progress = data;
+            })
+            .then(function (ret) {
+                expect(ret).to.equal('foo');
+                expect(progress).to.equal(0.5);
+            })
+            .done();
+
         });
 
         it('should work with functions that return values syncronously', function (next) {
