@@ -42,7 +42,7 @@ describe('PThtroller', function () {
             .done();
         });
 
-        it('should forward promise progress', function () {
+        it('should forward promise progress', function (next) {
             var progress;
             var throttler = new PThtroller();
 
@@ -62,6 +62,7 @@ describe('PThtroller', function () {
             .then(function (ret) {
                 expect(ret).to.equal('foo');
                 expect(progress).to.equal(0.5);
+                next();
             })
             .done();
 
