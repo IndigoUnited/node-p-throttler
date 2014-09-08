@@ -49,10 +49,10 @@ describe('PThtroller', function () {
             throttler.enqueue(function () {
                 var deferred = Q.defer();
 
-                setImmediate(function () {
+                setTimeout(function () {
                     deferred.notify(0.5);
                     deferred.resolve('foo');
-                });
+                }, 200);
 
                 return deferred.promise;
             })
