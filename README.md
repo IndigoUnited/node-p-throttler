@@ -1,4 +1,4 @@
-# p-throttler [![Build Status](https://secure.travis-ci.org/IndigoUnited/node-p-throttler.png)](http://travis-ci.org/IndigoUnited/node-p-throttler.png)
+# p-throttler [![Build Status](https://travis-ci.org/IndigoUnited/node-p-throttler.svg?branch=master)](https://travis-ci.org/IndigoUnited/node-p-throttler.svg?branch=master)
 
 A promise based throttler responsible for limiting execution of parallel tasks.
 The number of parallel tasks may be limited and configured per type.
