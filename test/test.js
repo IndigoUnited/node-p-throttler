@@ -176,7 +176,7 @@ describe('PThtroller', function () {
             throttler.enqueue(function () {
                 return new Promise(function (resolve, reject) {
                     setTimeout(function () {
-                        calls.push(4);
+                        calls.push(3);
                         reject(new Error('foo'));
                     }, 100);
                 });
