@@ -174,20 +174,29 @@ describe('PThtroller', function () {
             throttler.enqueue(function () { calls.push(1); return Promise.resolve(); });
             throttler.enqueue(function () { calls.push(2); return Promise.resolve(); });
             throttler.enqueue(function () {
+                return new Promise(function (resolve, reject) {
+                    setTimeout(function () {
+                        calls.push(4);
+                        reject(new Error('foo'));
+                    }, 100);
+                });
+            });
+            throttler.enqueue(function () {
                 return new Promise(function (resolve) {
                     setTimeout(function () {
-                        calls.push(3);
+                        calls.push(4);
                         resolve();
-                    }, 25);
+                    }, 150);
                 });
             }, 'foo');
 
-            timeout = setTimeout(function () {
+            setTimeout(function () {
                 throttler.abort().then(function () {
-                    expect(calls).to.eql([1, 2, 3]);
+                    expect(calls).to.eql([1, 2, 3, 4]);
                     next();
-                });
-            }, 30);
+                })
+                .done();
+            }, 25);
         });
     });
 
