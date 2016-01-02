@@ -1,7 +1,7 @@
 'use strict';
 
-var Q = require('q');
 var arrayRemove = require('./lib/arrayRemove');
+var Promise = require('promise');
 
 function PThrottler(defaultConcurrency, types) {
     this._defaultConcurrency = typeof defaultConcurrency === 'number' ? defaultConcurrency : 10;
@@ -15,28 +15,36 @@ function PThrottler(defaultConcurrency, types) {
 // -----------------
 
 PThrottler.prototype.enqueue = function (func, type) {
-    var deferred = Q.defer();
-    var types;
-    var entry;
+    var deferred = {};
+    var promise;
 
-    type = type || '';
-    types = Array.isArray(type) ? type : [type];
-    entry = {
-        func: func,
-        types: types,
-        deferred: deferred
-    };
+    promise = new Promise(function (resolve, reject) {
+        var types;
+        var entry;
 
-    // Add the entry to all the types queues
-    types.forEach(function (type) {
-        var queue = this._queue[type] = this._queue[type] || [];
-        queue.push(entry);
-    }, this);
+        deferred.resolve = resolve;
+        deferred.reject = reject;
 
-    // Process the entry shortly later so that handlers can be attached to the returned promise
-    Q.fcall(this._processEntry.bind(this, entry));
+        type = type || '';
+        types = Array.isArray(type) ? type : [type];
+        entry = {
+            func: func,
+            types: types,
+            deferred: deferred
+        };
+        // Add the entry to all the types queues
+        types.forEach(function (type) {
+            var queue = this._queue[type] = this._queue[type] || [];
+            queue.push(entry);
+        }, this);
 
-    return deferred.promise;
+        // Process the entry shortly later so that handlers can be attached to the returned promise
+        setImmediate(this._processEntry.bind(this, entry));
+    }.bind(this));
+
+    deferred.promise = promise;
+
+    return promise;
 };
 
 PThrottler.prototype.abort = function () {
@@ -49,11 +57,11 @@ PThrottler.prototype.abort = function () {
 
     // Wait for all pending functions to finish
     promises = this._executing.map(function (entry) {
-        return entry.deferred.promise;
+        return entry.deferred.promise.catch(function () {});  // Ignore any errors
     });
 
-    return Q.allSettled(promises)
-    .then(function () {});  // Resolve with no value
+    return Promise.all(promises)
+    .then(function () {});
 };
 
 // -----------------
@@ -86,12 +94,11 @@ PThrottler.prototype._processEntry = function (entry) {
 
         // Execute the function
         this._executing.push(entry);
-        promise = entry.func();
-        if (typeof promise.then === 'undefined') {
-            promise = Q.resolve(promise);
-        }
 
-        promise.progress(entry.deferred.notify.bind(entry.deferred));
+        promise = new Promise(function (resolve, reject) {
+            Promise.resolve(entry.func())
+            .then(resolve, reject);
+        });
 
         promise.then(
             this._onFulfill.bind(this, entry, true),

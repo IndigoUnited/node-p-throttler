@@ -1,4 +1,16 @@
-# p-throttler [![Build Status](https://travis-ci.org/IndigoUnited/node-p-throttler.svg?branch=master)](https://travis-ci.org/IndigoUnited/node-p-throttler.svg?branch=master)
+# p-throttler
+
+[![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency status][david-dm-image]][david-dm-url] [![Dev Dependency status][david-dm-dev-image]][david-dm-dev-url]
+
+[npm-url]:https://npmjs.org/package/p-throttler
+[downloads-image]:http://img.shields.io/npm/dm/p-throttler.svg
+[npm-image]:http://img.shields.io/npm/v/p-throttler.svg
+[travis-url]:https://travis-ci.org/IndigoUnited/node-p-throttler
+[travis-image]:http://img.shields.io/travis/IndigoUnited/node-p-throttler.svg
+[david-dm-url]:https://david-dm.org/IndigoUnited/node-p-throttler
+[david-dm-image]:https://img.shields.io/david/IndigoUnited/node-p-throttler.svg
+[david-dm-dev-url]:https://david-dm.org/IndigoUnited/node-p-throttler#info=devDependencies
+[david-dm-dev-image]:https://img.shields.io/david/dev/IndigoUnited/node-p-throttler.svg
 
 A promise based throttler responsible for limiting execution of parallel tasks.
 The number of parallel tasks may be limited and configured per type.

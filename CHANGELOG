@@ -1,0 +1,4 @@
+2.0.0
+
+- Switch from Q to native promise's
+- No more support for promise progress stuff

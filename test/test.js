@@ -1,7 +1,7 @@
 'use strict';
 
 var expect = require('expect.js');
-var Q = require('q');
+var Promise = require('promise');
 var PThtroller = require('../');
 
 describe('PThtroller', function () {
@@ -19,7 +19,12 @@ describe('PThtroller', function () {
             var throttler = new PThtroller();
             var promise;
 
-            promise = throttler.enqueue(function () { return Q.resolve('foo'); });
+            promise = throttler.enqueue(function () { return 'foo'; });
+
+            expect(promise).to.be.an('object');
+            expect(promise.then).to.be.a('function');
+
+            promise = throttler.enqueue(function () { return Promise.resolve('foo'); });
 
             expect(promise).to.be.an('object');
             expect(promise.then).to.be.a('function');
@@ -28,44 +33,18 @@ describe('PThtroller', function () {
         it('should call the function and fulfill the promise accordingly', function (next) {
             var throttler = new PThtroller();
 
-            throttler.enqueue(function () { return Q.resolve('foo'); })
+            throttler.enqueue(function () { return 'foo'; })
             .then(function (ret) {
                 expect(ret).to.equal('foo');
 
-                return throttler.enqueue(function () { return Q.reject(new Error('foo')); });
+                return throttler.enqueue(function () { return Promise.reject(new Error('foo')); });
             })
-           .fail(function (err) {
+           .catch(function (err) {
                 expect(err).to.be.an(Error);
                 expect(err.message).to.equal('foo');
                 next();
             })
             .done();
-        });
-
-        it('should forward promise progress', function (next) {
-            var progress;
-            var throttler = new PThtroller();
-
-            throttler.enqueue(function () {
-                var deferred = Q.defer();
-
-                setTimeout(function () {
-                    deferred.notify(0.5);
-                    deferred.resolve('foo');
-                }, 200);
-
-                return deferred.promise;
-            })
-            .progress(function (data) {
-                progress = data;
-            })
-            .then(function (ret) {
-                expect(ret).to.equal('foo');
-                expect(progress).to.equal(0.5);
-                next();
-            })
-            .done();
-
         });
 
         it('should work with functions that return values syncronously', function (next) {
@@ -79,11 +58,25 @@ describe('PThtroller', function () {
             .done();
         });
 
+        it('should work with functions that throw syncronously', function (next) {
+            var throttler = new PThtroller();
+
+            throttler.enqueue(function () { throw new Error('bar'); })
+            .then(function () {
+                throw new Error('Should not be called!');
+            }, function (err) {
+                expect(err).to.be.an(Error);
+                expect(err.message).to.be('bar');
+                next();
+            })
+            .done();
+        });
+
         it('should assume the default concurrency when a type is not specified', function (next) {
             var throttler = new PThtroller(1);
             var calls = 0;
 
-            throttler.enqueue(function () { calls++; return Q.defer().promise; });
+            throttler.enqueue(function () { calls++; return new Promise(function () {}); });
             throttler.enqueue(function () { next(new Error('Should not be called!')); });
 
             timeout = setTimeout(function () {
@@ -96,7 +89,7 @@ describe('PThtroller', function () {
             var throttler = new PThtroller(1);
             var calls = 0;
 
-            throttler.enqueue(function () { calls++; return Q.defer().promise; }, 'foo_type');
+            throttler.enqueue(function () { calls++; return new Promise(function () {}); }, 'foo_type');
             throttler.enqueue(function () { next(new Error('Should not be called!')); }, 'foo_type');
 
             timeout = setTimeout(function () {
@@ -109,8 +102,8 @@ describe('PThtroller', function () {
             var throttler = new PThtroller(1);
             var calls = 0;
 
-            throttler.enqueue(function () { calls++; return Q.defer().promise; });
-            throttler.enqueue(function () { calls++; return Q.defer().promise; }, 'foo_type');
+            throttler.enqueue(function () { calls++; return new Promise(function () {}); });
+            throttler.enqueue(function () { calls++; return new Promise(function () {}); }, 'foo_type');
             throttler.enqueue(function () { next(new Error('Should not be called!')); });
             throttler.enqueue(function () { next(new Error('Should not be called!')); }, 'foo_type');
 
@@ -131,13 +124,13 @@ describe('PThtroller', function () {
                 bar: 0
             };
 
-            throttler.enqueue(function () { calls.def++; return Q.defer().promise; });
+            throttler.enqueue(function () { calls.def++; return new Promise(function () {}); });
             throttler.enqueue(function () { next(new Error('Should not be called!')); });
-            throttler.enqueue(function () { calls.foo++; return Q.defer().promise; }, 'foo');
-            throttler.enqueue(function () { calls.foo++; return Q.defer().promise; }, 'foo');
-            throttler.enqueue(function () { calls.bar++; return Q.defer().promise; }, 'bar');
-            throttler.enqueue(function () { calls.bar++; return Q.defer().promise; }, 'bar');
-            throttler.enqueue(function () { calls.bar++; return Q.defer().promise; }, 'bar');
+            throttler.enqueue(function () { calls.foo++; return new Promise(function () {}); }, 'foo');
+            throttler.enqueue(function () { calls.foo++; return new Promise(function () {}); }, 'foo');
+            throttler.enqueue(function () { calls.bar++; return new Promise(function () {}); }, 'bar');
+            throttler.enqueue(function () { calls.bar++; return new Promise(function () {}); }, 'bar');
+            throttler.enqueue(function () { calls.bar++; return new Promise(function () {}); }, 'bar');
             throttler.enqueue(function () { next(new Error('Should not be called!')); }, 'bar');
 
             timeout = setTimeout(function () {
@@ -156,15 +149,15 @@ describe('PThtroller', function () {
             });
             var calls = 0;
 
-            throttler.enqueue(function () { calls++; return Q.resolve(); });
+            throttler.enqueue(function () { calls++; return Promise.resolve(); });
             throttler.enqueue(function () { next(new Error('Should not be called!')); });
-            throttler.enqueue(function () { calls++; return Q.resolve(); }, 'foo');
-            throttler.enqueue(function () { calls++; return Q.resolve(); }, 'foo');
+            throttler.enqueue(function () { calls++; return Promise.resolve(); }, 'foo');
+            throttler.enqueue(function () { calls++; return Promise.resolve(); }, 'foo');
             throttler.enqueue(function () { next(new Error('Should not be called!')); }, 'foo');
 
             throttler.abort();
 
-            throttler.enqueue(function () { calls++; return Q.resolve(); }, 'foo');
+            throttler.enqueue(function () { calls++; return Promise.resolve(); }, 'foo');
 
             timeout = setTimeout(function () {
                 expect(calls).to.equal(4);
@@ -178,17 +171,15 @@ describe('PThtroller', function () {
             });
             var calls = [];
 
-            throttler.enqueue(function () { calls.push(1); return Q.resolve(); });
-            throttler.enqueue(function () { calls.push(2); return Q.resolve(); });
+            throttler.enqueue(function () { calls.push(1); return Promise.resolve(); });
+            throttler.enqueue(function () { calls.push(2); return Promise.resolve(); });
             throttler.enqueue(function () {
-                var deferred = Q.defer();
-
-                setTimeout(function () {
-                    calls.push(3);
-                    deferred.resolve();
-                }, 25);
-
-                return deferred.promise;
+                return new Promise(function (resolve) {
+                    setTimeout(function () {
+                        calls.push(3);
+                        resolve();
+                    }, 25);
+                });
             }, 'foo');
 
             timeout = setTimeout(function () {
@@ -208,11 +199,11 @@ describe('PThtroller', function () {
             });
             var calls = 0;
 
-            throttler.enqueue(function () { calls++; return Q.resolve(); });
-            throttler.enqueue(function () { calls++; return Q.resolve(); }, 'foo');
-            throttler.enqueue(function () { calls++; return Q.resolve(); }, 'foo');
-            throttler.enqueue(function () { calls++; return Q.resolve(); });
-            throttler.enqueue(function () { calls++; return Q.resolve(); }, 'foo');
+            throttler.enqueue(function () { calls++; return Promise.resolve(); });
+            throttler.enqueue(function () { calls++; return Promise.resolve(); }, 'foo');
+            throttler.enqueue(function () { calls++; return Promise.resolve(); }, 'foo');
+            throttler.enqueue(function () { calls++; return Promise.resolve(); });
+            throttler.enqueue(function () { calls++; return Promise.resolve(); }, 'foo');
 
             timeout = setTimeout(function () {
                 expect(calls).to.equal(5);
@@ -227,32 +218,32 @@ describe('PThtroller', function () {
 
             throttler.enqueue(function () {
                 defCalls.push(1);
-                return Q.resolve();
+                return Promise.resolve();
             });
 
             throttler.enqueue(function () {
                 defCalls.push(2);
-                return Q.resolve();
+                return Promise.resolve();
             });
 
             throttler.enqueue(function () {
                 defCalls.push(3);
-                return Q.resolve();
+                return Promise.resolve();
             });
 
             throttler.enqueue(function () {
                 fooCalls.push(1);
-                return Q.resolve();
+                return Promise.resolve();
             }, 'foo');
 
             throttler.enqueue(function () {
                 fooCalls.push(2);
-                return Q.resolve();
+                return Promise.resolve();
             }, 'foo');
 
             throttler.enqueue(function () {
                 fooCalls.push(3);
-                return Q.resolve();
+                return Promise.resolve();
             }, 'foo');
 
             timeout = setTimeout(function () {
@@ -269,12 +260,12 @@ describe('PThtroller', function () {
             });
             var calls = 0;
 
-            throttler.enqueue(function () { return Q.defer().promise; }, 'foo');
-            throttler.enqueue(function () { return Q.defer().promise; }, 'bar');
+            throttler.enqueue(function () { return new Promise(function () {}); }, 'foo');
+            throttler.enqueue(function () { return new Promise(function () {}); }, 'bar');
 
-            throttler.enqueue(function () { calls++; return Q.resolve(); }, 'bar');
+            throttler.enqueue(function () { calls++; return Promise.resolve(); }, 'bar');
             throttler.enqueue(function () { next(new Error('Should not be called!')); }, ['foo', 'bar']);
-            throttler.enqueue(function () { calls++; return Q.resolve(); }, 'bar');
+            throttler.enqueue(function () { calls++; return Promise.resolve(); }, 'bar');
             throttler.enqueue(function () { next(new Error('Should not be called!')); }, 'foo');
 
             timeout = setTimeout(function () {
@@ -290,10 +281,10 @@ describe('PThtroller', function () {
             });
             var calls = 0;
 
-            throttler.enqueue(function () { return Q.defer().promise; }, 'bar');
-            throttler.enqueue(function () { calls++; return Q.resolve(); }, ['foo', 'bar']);
-            throttler.enqueue(function () { calls++; return Q.resolve(); }, 'foo');
-            throttler.enqueue(function () { calls++; return Q.resolve(); }, 'bar');
+            throttler.enqueue(function () { return new Promise(function () {}); }, 'bar');
+            throttler.enqueue(function () { calls++; return Promise.resolve(); }, ['foo', 'bar']);
+            throttler.enqueue(function () { calls++; return Promise.resolve(); }, 'foo');
+            throttler.enqueue(function () { calls++; return Promise.resolve(); }, 'bar');
 
             timeout = setTimeout(function () {
                 expect(calls).to.equal(3);
