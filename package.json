@@ -1,6 +1,6 @@
 {
   "name": "p-throttler",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A promise based throttler capable of limiting execution of parallel tasks",
   "main": "index.js",
   "devDependencies": {
@@ -27,5 +27,8 @@
     "parallel"
   ],
   "author": "IndigoUnited <hello@indigounited.com> (http://indigounited.com)",
-  "license": "MIT"
+  "license": "MIT",
+  "engines" : {
+    "node" : ">=0.12"
+  }
 }
