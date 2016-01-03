@@ -1,7 +1,6 @@
 'use strict';
 
 var expect = require('expect.js');
-var Promise = require('promise');
 var PThtroller = require('../');
 
 describe('PThtroller', function () {
@@ -30,46 +29,42 @@ describe('PThtroller', function () {
             expect(promise.then).to.be.a('function');
         });
 
-        it('should call the function and fulfill the promise accordingly', function (next) {
+        it('should call the function and fulfill the promise accordingly', function () {
             var throttler = new PThtroller();
 
-            throttler.enqueue(function () { return 'foo'; })
+            return throttler.enqueue(function () { return 'foo'; })
             .then(function (ret) {
                 expect(ret).to.equal('foo');
 
                 return throttler.enqueue(function () { return Promise.reject(new Error('foo')); });
             })
-           .catch(function (err) {
+           .then(function () {
+               throw new Error('Should have failed!');
+           }, function (err) {
                 expect(err).to.be.an(Error);
                 expect(err.message).to.equal('foo');
-                next();
-            })
-            .done();
+            });
         });
 
-        it('should work with functions that return values syncronously', function (next) {
+        it('should work with functions that return values syncronously', function () {
             var throttler = new PThtroller();
 
             throttler.enqueue(function () { return 'foo'; })
             .then(function (ret) {
                 expect(ret).to.equal('foo');
-                next();
-            })
-            .done();
+            });
         });
 
-        it('should work with functions that throw syncronously', function (next) {
+        it('should work with functions that throw syncronously', function () {
             var throttler = new PThtroller();
 
-            throttler.enqueue(function () { throw new Error('bar'); })
+            return throttler.enqueue(function () { throw new Error('bar'); })
             .then(function () {
                 throw new Error('Should not be called!');
             }, function (err) {
                 expect(err).to.be.an(Error);
                 expect(err.message).to.be('bar');
-                next();
-            })
-            .done();
+            });
         });
 
         it('should assume the default concurrency when a type is not specified', function (next) {
@@ -190,12 +185,11 @@ describe('PThtroller', function () {
                 });
             }, 'foo');
 
-            setTimeout(function () {
+            timeout = setTimeout(function () {
                 throttler.abort().then(function () {
                     expect(calls).to.eql([1, 2, 3, 4]);
-                    next();
                 })
-                .done();
+                .then(next, next);
             }, 25);
         });
     });

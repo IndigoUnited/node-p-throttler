@@ -8,7 +8,8 @@
         "before",
         "beforeEach",
         "after",
-        "afterEach"
+        "afterEach",
+        "Promise"
     ],
 
     "node": true,

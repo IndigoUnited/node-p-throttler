@@ -1,7 +1,6 @@
 'use strict';
 
 var arrayRemove = require('./lib/arrayRemove');
-var Promise = require('promise');
 
 function PThrottler(defaultConcurrency, types) {
     this._defaultConcurrency = typeof defaultConcurrency === 'number' ? defaultConcurrency : 10;
