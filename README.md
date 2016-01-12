@@ -92,6 +92,10 @@ Aborts all current work being done.
 Returns a promise that is resolved when the current running functions finish to execute.   
 Any function that was in the queue waiting to be ran is removed immediately.
 
+## Tests
+
+`$ npm test`
+
 
 ## License
 
