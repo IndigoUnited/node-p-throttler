@@ -6,7 +6,7 @@
 [downloads-image]:http://img.shields.io/npm/dm/p-throttler.svg
 [npm-image]:http://img.shields.io/npm/v/p-throttler.svg
 [travis-url]:https://travis-ci.org/IndigoUnited/node-p-throttler
-[travis-image]:http://img.shields.io/travis/IndigoUnited/node-p-throttler.svg
+[travis-image]:http://img.shields.io/travis/IndigoUnited/node-p-throttler/master.svg
 [david-dm-url]:https://david-dm.org/IndigoUnited/node-p-throttler
 [david-dm-image]:https://img.shields.io/david/IndigoUnited/node-p-throttler.svg
 [david-dm-dev-url]:https://david-dm.org/IndigoUnited/node-p-throttler#info=devDependencies
