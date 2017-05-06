@@ -9,7 +9,7 @@
 [travis-image]:http://img.shields.io/travis/IndigoUnited/node-p-throttler/master.svg
 [david-dm-url]:https://david-dm.org/IndigoUnited/node-p-throttler
 [david-dm-image]:https://img.shields.io/david/IndigoUnited/node-p-throttler.svg
-[david-dm-dev-url]:https://david-dm.org/IndigoUnited/node-p-throttler#info=devDependencies
+[david-dm-dev-url]:https://david-dm.org/IndigoUnited/node-p-throttler?type=dev
 [david-dm-dev-image]:https://img.shields.io/david/dev/IndigoUnited/node-p-throttler.svg
 
 A promise based throttler responsible for limiting execution of parallel tasks.
